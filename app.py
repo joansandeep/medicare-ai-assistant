@@ -1884,6 +1884,8 @@ def system_status():
             status['csv_columns'] = list(df.columns)
             status['csv_sample'] = df.head(2).to_dict('records') if not df.empty else []
         except Exception as e:
+            status['csv_error'] = str(e)
+    
     return jsonify(status)
 
 def extract_cid_from_message(message):
