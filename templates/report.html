@@ -1,0 +1,540 @@
+{% extends 'base.html' %}
+{% block title %}Medical Reports - Hospital Portal{% endblock %}
+
+{% block extra_css %}
+<style>
+/* Upload Area Styling */
+.upload-area {
+  border: 2px dashed #007bff;
+  border-radius: 12px;
+  padding: 40px;
+  text-align: center;
+  background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+  transition: all 0.3s ease;
+  cursor: pointer;
+  position: relative;
+  margin-bottom: 30px;
+}
+
+.upload-area:hover {
+  border-color: #0056b3;
+  background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+  transform: translateY(-2px);
+}
+
+.upload-area.dragover {
+  border-color: #28a745;
+  background: linear-gradient(135deg, #d4edda, #c3e6cb);
+}
+
+.file-input {
+  position: absolute;
+  opacity: 0;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+}
+
+.upload-icon {
+  font-size: 3rem;
+  color: #007bff;
+  margin-bottom: 15px;
+}
+
+.upload-button {
+  background: linear-gradient(135deg, #007bff, #0056b3);
+  color: white;
+  border: none;
+  padding: 12px 30px;
+  border-radius: 25px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 15px;
+  box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3);
+}
+
+.upload-button:hover {
+  background: linear-gradient(135deg, #0056b3, #004085);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 123, 255, 0.4);
+}
+
+.upload-hint {
+  color: #6c757d;
+  font-size: 14px;
+  margin-top: 10px;
+}
+
+/* Progress Bar */
+.upload-progress {
+  display: none;
+  margin-top: 20px;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 20px;
+  background-color: #e9ecef;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #007bff, #28a745);
+  width: 0%;
+  transition: width 0.3s ease;
+}
+
+.progress-text {
+  text-align: center;
+  margin-top: 10px;
+  font-size: 14px;
+  color: #6c757d;
+}
+
+/* Files Grid */
+.files-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.file-item {
+  background: white;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  transition: all 0.3s ease;
+}
+
+.file-item:hover {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  transform: translateY(-2px);
+}
+
+.file-icon {
+  font-size: 2rem;
+  margin-bottom: 10px;
+}
+
+.file-name {
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 5px;
+}
+
+.file-meta {
+  font-size: 14px;
+  color: #6c757d;
+  margin-bottom: 10px;
+}
+
+.file-cid {
+  font-size: 12px;
+  color: #6c757d;
+  margin-bottom: 15px;
+  word-break: break-all;
+}
+
+.copy-btn {
+  background: #28a745;
+  color: white;
+  border: none;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  cursor: pointer;
+  margin-left: 5px;
+}
+
+.copy-btn:hover {
+  background: #218838;
+}
+
+.file-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.action-btn {
+  padding: 8px 12px;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.view-btn {
+  background: #007bff;
+  color: white;
+}
+
+.view-btn:hover {
+  background: #0056b3;
+}
+
+.chat-btn {
+  background: #28a745;
+  color: white;
+}
+
+.chat-btn:hover {
+  background: #218838;
+}
+
+.download-btn {
+  background: #6c757d;
+  color: white;
+}
+
+.download-btn:hover {
+  background: #5a6268;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: #6c757d;
+}
+
+.empty-icon {
+  font-size: 4rem;
+  margin-bottom: 20px;
+  opacity: 0.5;
+}
+
+.section-title {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-12">
+      <div class="card shadow-lg border-0">
+        <div class="card-header bg-gradient-primary text-white">
+          <h4 class="mb-0">
+            <i class="fas fa-file-medical-alt me-2"></i>
+            Medical Reports & Documents
+          </h4>
+        </div>
+        
+        <div class="card-body">
+          <!-- Upload Section -->
+          <div class="upload-section mb-5">
+            <h5 class="section-title">
+              <i class="fas fa-cloud-upload-alt text-primary me-2"></i>
+              Upload New Report
+            </h5>
+            
+            <form id="uploadForm" enctype="multipart/form-data">
+              <div class="upload-area" id="uploadArea">
+                <input type="file" id="fileInput" name="file" class="file-input" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
+                <div class="upload-content">
+                  <i class="fas fa-cloud-upload-alt upload-icon"></i>
+                  <h6>Drag & Drop your medical reports here</h6>
+                  <p class="text-muted">or</p>
+                  <button type="button" class="upload-button" id="browseBtn">
+                    <i class="fas fa-folder-open me-2"></i>
+                    Choose File
+                  </button>
+                  <p class="upload-hint">Supported formats: PDF, DOC, DOCX, JPG, PNG (Max 10MB)</p>
+                </div>
+              </div>
+              
+              <!-- Progress Bar -->
+              <div class="upload-progress" id="uploadProgress">
+                <div class="progress-bar">
+                  <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <p class="progress-text" id="progressText">Uploading... 0%</p>
+              </div>
+            </form>
+          </div>
+
+          <!-- Uploaded Files Section -->
+          <div class="files-section">
+            <h5 class="section-title">
+              <i class="fas fa-folder-open text-success me-2"></i>
+              Your Medical Reports
+            </h5>
+            
+            {% if uploaded_files and uploaded_files|length > 0 %}
+              <div class="files-grid">
+                {% for file in uploaded_files %}
+                  <div class="file-item">
+                    <div class="file-icon">
+                      <i class="fas fa-file-pdf text-danger"></i>
+                    </div>
+                    <div class="file-details">
+                      <h6 class="file-name">{{ file.filename }}</h6>
+                      <p class="file-meta">
+                        <small class="text-muted">
+                          <i class="fas fa-calendar me-1"></i>
+                          {{ file.uploaded_at.strftime('%B %d, %Y at %I:%M %p') if file.uploaded_at else 'Unknown date' }}
+                        </small>
+                      </p>
+                      <p class="file-cid">
+                        CID: <span>{{ file.cid }}</span>
+                        <button class="copy-btn" type="button" data-cid="{{ file.cid }}" onclick="copyCID(this)">Copy</button>
+                      </p>
+                    </div>
+                    <div class="file-actions">
+                      <button class="action-btn view-btn" onclick="viewFile('{{ file.cid }}', '{{ file.filename }}')">
+                        <i class="fas fa-eye"></i> View
+                      </button>
+                      <button class="action-btn chat-btn" onclick="chatWithPDF('{{ file.cid }}', '{{ file.filename }}')">
+                        <i class="fas fa-comments"></i> Chat
+                      </button>
+                      <button class="action-btn download-btn" onclick="downloadFile('{{ file.cid }}', '{{ file.filename }}')">
+                        <i class="fas fa-download"></i> Download
+                      </button>
+                    </div>
+                  </div>
+                {% endfor %}
+              </div>
+            {% else %}
+              <div class="empty-state">
+                <i class="fas fa-folder-open empty-icon"></i>
+                <h6>No reports uploaded yet</h6>
+                <p class="text-muted">Upload your first medical report to get started</p>
+              </div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const uploadArea = document.getElementById('uploadArea');
+  const fileInput = document.getElementById('fileInput');
+  const browseBtn = document.getElementById('browseBtn');
+  const uploadProgress = document.getElementById('uploadProgress');
+  const progressFill = document.getElementById('progressFill');
+  const progressText = document.getElementById('progressText');
+
+  // Fix browse button
+  browseBtn.addEventListener('click', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    fileInput.click();
+  });
+
+  // Fix upload area click
+  uploadArea.addEventListener('click', function(e) {
+    if (e.target === uploadArea || e.target.closest('.upload-content')) {
+      fileInput.click();
+    }
+  });
+
+  // File input change handler
+  fileInput.addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+      uploadFile(file);
+    }
+  });
+
+  // Drag and drop handlers
+  uploadArea.addEventListener('dragover', function(e) {
+    e.preventDefault();
+    uploadArea.classList.add('dragover');
+  });
+
+  uploadArea.addEventListener('dragleave', function(e) {
+    e.preventDefault();
+    uploadArea.classList.remove('dragover');
+  });
+
+  uploadArea.addEventListener('drop', function(e) {
+    e.preventDefault();
+    uploadArea.classList.remove('dragover');
+    
+    const files = e.dataTransfer.files;
+    if (files.length > 0) {
+      const file = files[0];
+      fileInput.files = files;
+      uploadFile(file);
+    }
+  });
+
+  function uploadFile(file) {
+    // Validate file type
+    const allowedTypes = ['application/pdf', 'application/msword', 
+                         'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                         'image/jpeg', 'image/jpg', 'image/png'];
+    
+    if (!allowedTypes.includes(file.type)) {
+      alert('Invalid file type. Please upload PDF, DOC, DOCX, JPG, or PNG files only.');
+      fileInput.value = '';
+      return;
+    }
+
+    // Validate file size (10MB limit)
+    if (file.size > 10 * 1024 * 1024) {
+      alert('File size too large. Please upload files smaller than 10MB.');
+      fileInput.value = '';
+      return;
+    }
+
+    // Show progress
+    uploadProgress.style.display = 'block';
+    progressFill.style.width = '0%';
+    progressText.textContent = 'Uploading... 0%';
+
+    // Create FormData
+    const formData = new FormData();
+    formData.append('file', file);
+
+    // Upload with progress tracking
+    const xhr = new XMLHttpRequest();
+
+    xhr.upload.addEventListener('progress', function(e) {
+      if (e.lengthComputable) {
+        const percentComplete = (e.loaded / e.total) * 100;
+        progressFill.style.width = percentComplete + '%';
+        progressText.textContent = `Uploading... ${Math.round(percentComplete)}%`;
+      }
+    });
+
+    xhr.addEventListener('load', function() {
+      if (xhr.status === 200) {
+        try {
+          const response = JSON.parse(xhr.responseText);
+          if (response.cid) {
+            progressFill.style.width = '100%';
+            progressText.textContent = 'Upload complete!';
+            
+            showNotification('File uploaded successfully!', 'success');
+            
+            setTimeout(() => {
+              fileInput.value = '';
+              uploadProgress.style.display = 'none';
+              location.reload();
+            }, 2000);
+          } else {
+            throw new Error(response.error || 'Upload failed');
+          }
+        } catch (e) {
+          showNotification('Upload failed: ' + e.message, 'error');
+          uploadProgress.style.display = 'none';
+        }
+      } else {
+        showNotification('Upload failed: Server error', 'error');
+        uploadProgress.style.display = 'none';
+      }
+    });
+
+    xhr.addEventListener('error', function() {
+      showNotification('Upload failed: Network error', 'error');
+      uploadProgress.style.display = 'none';
+    });
+
+    xhr.open('POST', '/upload');
+    xhr.send(formData);
+  }
+
+  function showNotification(message, type) {
+    const notification = document.createElement('div');
+    notification.className = `alert alert-${type === 'success' ? 'success' : 'danger'} alert-dismissible fade show`;
+    notification.style.position = 'fixed';
+    notification.style.top = '20px';
+    notification.style.right = '20px';
+    notification.style.zIndex = '9999';
+    notification.innerHTML = `
+      ${message}
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+      notification.remove();
+    }, 5000);
+  }
+});
+
+// File action functions
+function chatWithPDF(cid, filename) {
+  window.location.href = `/chatbot?cid=${cid}&filename=${encodeURIComponent(filename)}`;
+}
+
+function copyCID(btn) {
+  const cid = btn.dataset.cid || '';
+  if (!cid) return;
+  
+  navigator.clipboard.writeText(cid).then(() => {
+    const prev = btn.textContent;
+    btn.textContent = 'Copied';
+    btn.disabled = true;
+    setTimeout(() => {
+      btn.textContent = prev;
+      btn.disabled = false;
+    }, 1400);
+  }).catch(() => {
+    const ta = document.createElement('textarea');
+    ta.value = cid;
+    document.body.appendChild(ta);
+    ta.select();
+    try {
+      document.execCommand('copy');
+    } catch(e) {}
+    document.body.removeChild(ta);
+    
+    const prev = btn.textContent;
+    btn.textContent = 'Copied';
+    btn.disabled = true;
+    setTimeout(() => {
+      btn.textContent = prev;
+      btn.disabled = false;
+    }, 1400);
+  });
+}
+
+function viewFile(cid, filename) {
+  const gatewayUrl = `{{ ipfs_gateway_base }}/ipfs/${cid}`;
+  window.open(gatewayUrl, '_blank');
+}
+
+function downloadFile(cid, filename) {
+  const gatewayUrl = `{{ ipfs_gateway_base }}/ipfs/${cid}`;
+  const link = document.createElement('a');
+  link.href = gatewayUrl;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+
+// Auto-refresh functionality
+setInterval(() => {
+  if (document.visibilityState === 'visible') {
+    location.reload();
+  }
+}, 30000);
+</script>
+{% endblock %}

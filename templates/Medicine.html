@@ -1,0 +1,211 @@
+{% extends 'base.html' %}
+{% block title %}Medicine Management - MediCare{% endblock %}
+{% block content %}
+
+<div class="page-header">
+    <h1><i class="fas fa-pills me-3"></i>Medicine Management</h1>
+    <p class="mb-0">Request and track your medications easily</p>
+</div>
+
+<style>
+    .page-header {
+        background: linear-gradient(90deg, #4e54c8, #8f94fb);
+        color: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        margin-bottom: 30px;
+    }
+    .page-header h1 {
+        font-size: 2.5rem;
+        font-weight: bold;
+    }
+    .page-header p {
+        font-size: 1.2rem;
+        margin-top: 5px;
+    }
+    .card {
+        border: none;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+        padding: 20px;
+        margin-bottom: 30px;
+    }
+    .card h2 {
+        font-size: 1.8rem;
+        margin-bottom: 20px;
+        color: #333;
+    }
+    .form-label {
+        font-weight: bold;
+        color: #555;
+    }
+    .form-control {
+        border-radius: 5px;
+        border: 1px solid #ccc;
+        padding: 10px;
+    }
+    .form-control:focus {
+        border-color: #4e54c8;
+        box-shadow: 0 0 5px rgba(78, 84, 200, 0.5);
+    }
+    .btn {
+        background-color: #4e54c8;
+        color: white;
+        border-radius: 5px;
+        padding: 10px 20px;
+        transition: background-color 0.3s ease;
+        cursor: pointer;
+    }
+    .btn:hover {
+        background-color: #3b40a4;
+        color: white;
+    }
+    .table th {
+        background-color: #f8f9fa;
+        color: #333;
+    }
+    .table td, .table th {
+        vertical-align: middle;
+    }
+    .badge {
+        font-size: 0.9rem;
+        padding: 5px 10px;
+        border-radius: 12px;
+        cursor: default;
+    }
+</style>
+
+<div class="container-fluid">
+    <div class="row">
+        <!-- Request Form -->
+        <div class="col-lg-6 mb-4">
+            <div class="card">
+                <h2><i class="fas fa-plus-circle me-2"></i>Request New Medicine</h2>
+                <form method="POST" class="row g-3">
+                    <div class="col-md-8">
+                        <label for="medicine_name" class="form-label">
+                            <i class="fas fa-prescription-bottle me-1"></i> Medicine Name
+                        </label>
+                        <input type="text" id="medicine_name" name="medicine_name" required 
+                               class="form-control" placeholder="Enter medicine name" list="medicine-suggestions">
+                        <datalist id="medicine-suggestions">
+                            <option value="Paracetamol">
+                            <option value="Ibuprofen">
+                            <option value="Amoxicillin">
+                            <option value="Aspirin">
+                            <option value="Omeprazole">
+                            <option value="Metformin">
+                            <option value="Atorvastatin">
+                            <option value="Lisinopril">
+                        </datalist>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="quantity" class="form-label">
+                            <i class="fas fa-sort-numeric-up me-1"></i> Quantity
+                        </label>
+                        <input type="number" id="quantity" name="quantity" required min="1" max="100"
+                               class="form-control" placeholder="Units">
+                    </div>
+                    <div class="col-12 text-end">
+                        <button type="submit" class="btn">
+                            <i class="fas fa-paper-plane me-2"></i>Submit Request
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Requests Table -->
+        <div class="col-12">
+            {% if requests %}
+            <div class="card">
+                <h2><i class="fas fa-list me-2"></i>Your Medicine Requests</h2>
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Medicine</th>
+                                <th>Quantity</th>
+                                <th>Status</th>
+                                <th>Request Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for req in requests %}
+                            <tr>
+                                <td>#{{ req.id }}</td>
+                                <td><strong>{{ req.medicine_name }}</strong></td>
+                                <td>{{ req.quantity }} units</td>
+                                <td>
+                                    {% set badge = 'secondary' %}
+                                    {% if req.status == 'pending' %}{% set badge = 'warning' %}{% endif %}
+                                    {% if req.status == 'approved' %}{% set badge = 'success' %}{% endif %}
+                                    {% if req.status == 'rejected' %}{% set badge = 'danger' %}{% endif %}
+                                    <span class="badge bg-{{ badge }}">{{ req.status|capitalize }}</span>
+                                </td>
+                                <td>{{ req.request_date.strftime('%Y-%m-%d %H:%M') if req.request_date else 'N/A' }}</td>
+                                <td>
+                                    {% if req.status == 'approved' %}
+                                    <button class="btn btn-sm">
+                                        <i class="fas fa-download me-1"></i> Collect
+                                    </button>
+                                    {% elif req.status == 'pending' %}
+                                    <button class="btn btn-sm cancel-request-btn" data-request-id="{{ req.id }}">
+                                        <i class="fas fa-times me-1"></i> Cancel
+                                    </button>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {% else %}
+            <div class="card text-center">
+                <i class="fas fa-pills mb-3" style="font-size:4rem;color:#6c757d;"></i>
+                <h3>No Medicine Requests Yet</h3>
+                <p class="text-muted">Submit your first medicine request using the form above.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        document.querySelectorAll('.cancel-request-btn').forEach(function (btn) {
+            btn.addEventListener('click', async function () {
+                const requestId = this.getAttribute('data-request-id');
+                if (!requestId) return;
+
+                if (!confirm('Are you sure you want to cancel this request?')) return;
+
+                try {
+                    const response = await fetch(`/cancel_request/${requestId}`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            // 'X-CSRFToken': ''  // CSRF protection is disabled
+                        }
+                    });
+                    const data = await response.json();
+                    if (data.success) {
+                        alert('Request cancelled successfully.');
+                        location.reload();  // reload page to update the table
+                    } else {
+                        alert('Failed to cancel the request: ' + (data.message || 'Unknown error'));
+                    }
+                } catch (err) {
+                    alert('Error cancelling the request.');
+                    console.error(err);
+                }
+            });
+        });
+    });
+</script>
+
+{% endblock %}

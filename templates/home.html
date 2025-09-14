@@ -1,0 +1,263 @@
+{% extends 'base.html' %}
+{% block title %}Healthcare Management Dashboard{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="dash-wrapper">
+    <!-- Hero Section -->
+    <div class="dash-hero">
+        <div class="dash-hero__content">
+            <h1 class="dash-hero__title">Welcome back, {{ user_full_name }}</h1>
+            <p class="dash-hero__subtitle">Real-time monitoring of your vitals and health trends</p>
+        </div>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="stats-grid">
+        <div class="stat-box">
+            <div class="stat-icon">
+                <i class="fas fa-heartbeat"></i>
+            </div>
+            <div class="stat-info">
+                <div class="stat-label">Heart Rate</div>
+                <div class="stat-value" id="heartRateValue">-- BPM</div>
+            </div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-icon">
+                <i class="fas fa-tint"></i>
+            </div>
+            <div class="stat-info">
+                <div class="stat-label">Blood Pressure</div>
+                <div class="stat-value" id="bpValue">--/--</div>
+            </div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-icon">
+                <i class="fas fa-thermometer-half"></i>
+            </div>
+            <div class="stat-info">
+                <div class="stat-label">Temperature</div>
+                <div class="stat-value" id="tempValue">-- °C</div>
+            </div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-icon">
+                <i class="fas fa-chart-line"></i>
+            </div>
+            <div class="stat-info">
+                <div class="stat-label">Health Score</div>
+                <div class="stat-value" id="healthScoreValue">-- %</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Section -->
+    <div class="dash-grid charts-2">
+        <!-- Vitals Chart -->
+        <div class="dash-card">
+            <div class="dash-card__header">
+                <h3><i class="fas fa-chart-line"></i> Vitals (Daily)</h3>
+                <div class="controls-row">
+                    <div class="metric-pills">
+                        <span class="pill active" data-key="hr">
+                            <span class="dot hr"></span> Heart Rate
+                        </span>
+                        <span class="pill active" data-key="temp">
+                            <span class="dot temp"></span> Temperature
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <div class="dash-card__body chart">
+                <canvas id="vitalsChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Trends Chart -->
+        <div class="dash-card">
+            <div class="dash-card__header">
+                <h3><i class="fas fa-trending-up"></i> Health Trends (7 Days)</h3>
+            </div>
+            <div class="dash-card__body chart">
+                <canvas id="trendsChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Appointments Table -->
+    <div class="appointments-table-section">
+        <div class="table-header">
+            <h3><i class="fas fa-calendar-alt"></i> Your Upcoming Appointments</h3>
+            <button class="schedule-btn" onclick="window.location.href='{{ url_for('contact') }}'">
+                <i class="fas fa-plus"></i> Schedule New
+            </button>
+        </div>
+        
+        <div class="table-wrap">
+            <table class="table appointments-table">
+                <thead>
+                    <tr>
+                        <th>Date & Time</th>
+                        <th>Appointment Details</th>
+                        <th>Doctor & Department</th>
+                        <th>Type</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="appointmentsBody">
+                    <!-- Dynamic appointments will be loaded here -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Health Insights -->
+    <div class="insights-table-section">
+        <div class="table-header">
+            <h3><i class="fas fa-brain"></i> Health Insights & Recommendations</h3>
+        </div>
+        
+        <div class="table-wrap">
+            <table class="table insights-table">
+                <thead>
+                    <tr>
+                        <th>Metric</th>
+                        <th>Current Status</th>
+                        <th>Recommendation</th>
+                        <th>Trend</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="normal-row">
+                        <td>
+                            <div class="metric-info">
+                                <i class="fas fa-heartbeat" style="color: #ef4444;"></i>
+                                <span class="metric-name">Heart Rate</span>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="status-text good">Normal range</div>
+                        </td>
+                        <td>
+                            <div class="recommendation-text">Continue regular exercise and maintain healthy lifestyle</div>
+                        </td>
+                        <td>
+                            <span class="health-badge good">Stable</span>
+                        </td>
+                    </tr>
+                    <tr class="specialist-row">
+                        <td>
+                            <div class="metric-info">
+                                <i class="fas fa-thermometer-half" style="color: #8b5cf6;"></i>
+                                <span class="metric-name">Temperature</span>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="status-text normal">Normal</div>
+                        </td>
+                        <td>
+                            <div class="recommendation-text">Temperature within healthy range</div>
+                        </td>
+                        <td>
+                            <span class="health-badge normal">Good</span>
+                        </td>
+                    </tr>
+                    <tr class="urgent-row">
+                        <td>
+                            <div class="metric-info">
+                                <i class="fas fa-tint" style="color: #ff6b00;"></i>
+                                <span class="metric-name">Blood Pressure</span>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="status-text stable">Monitor closely</div>
+                        </td>
+                        <td>
+                            <div class="recommendation-text">Consider reducing sodium intake and regular monitoring</div>
+                        </td>
+                        <td>
+                            <span class="health-badge stable">Stable</span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Hidden appointment modal for scheduling -->
+<div id="apptModal" class="hc-modal" style="display: none;">
+    <div class="hc-modal__dialog">
+        <div class="hc-modal__header">
+            <h3 id="apptModalTitle">Schedule Appointment</h3>
+            <button class="hc-modal__close" id="apptModalClose">&times;</button>
+        </div>
+        <div class="hc-modal__body">
+            <form id="apptForm">
+                <input type="hidden" id="apptId">
+                <div class="form-grid">
+                    <label>
+                        Date & Time:
+                        <input type="datetime-local" id="apptDateTime" required>
+                    </label>
+                    <label>
+                        Duration (minutes):
+                        <input type="number" id="apptDuration" value="30" min="15" max="180">
+                    </label>
+                    <label>
+                        Appointment Title:
+                        <input type="text" id="apptTitle" placeholder="e.g., General Checkup" required>
+                    </label>
+                    <label>
+                        Doctor:
+                        <input type="text" id="apptDoctor" placeholder="Dr. Smith" required>
+                    </label>
+                    <label>
+                        Department:
+                        <select id="apptDept">
+                            <option value="General Medicine">General Medicine</option>
+                            <option value="Cardiology">Cardiology</option>
+                            <option value="Dermatology">Dermatology</option>
+                            <option value="Orthopedics">Orthopedics</option>
+                            <option value="Laboratory">Laboratory</option>
+                        </select>
+                    </label>
+                    <label>
+                        Type:
+                        <select id="apptType">
+                            <option value="routine">Routine</option>
+                            <option value="follow-up">Follow-up</option>
+                            <option value="specialist">Specialist</option>
+                            <option value="emergency">Emergency</option>
+                        </select>
+                    </label>
+                </div>
+                <div class="form-grid" style="grid-template-columns: 1fr;">
+                    <label>
+                        Description:
+                        <textarea id="apptDesc" rows="3" placeholder="Brief description of the appointment..."></textarea>
+                    </label>
+                </div>
+                <div class="hc-modal__footer">
+                    <button type="button" id="apptCancelBtn" class="btn cancel">Cancel</button>
+                    <button type="submit" class="btn">Save Appointment</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Chart.js for charts -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.min.js"></script>
+<!-- Metrics Dashboard -->
+<script src="{{ url_for('static', filename='js/metrics_pro_v2.js') }}"></script>
+<!-- Appointments -->
+<script src="{{ url_for('static', filename='js/appointments_frontend.js') }}"></script>
+{% endblock %}

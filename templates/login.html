@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MediCare Portal - Sign In</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<style>
+/* Force auth (right) panel above left info panel */
+.login-container {
+  position: relative;
+}
+.auth-panel {
+  position: relative;
+  z-index: 20;
+}
+.info-panel {
+  position: relative;
+  z-index: 10;
+}
+.info-panel::before {
+  pointer-events: none; /* ensure decorative pseudo-element can't block clicks */
+}
+.register-link {
+  position: relative;
+  z-index: 25;
+  cursor: pointer;
+}
+</style>
+<body class="auth-body">
+    <div class="login-container">
+        <!-- Left Panel -->
+        <div class="login-panel info-panel">
+            <div class="brand-section">
+                <div class="logo-wrapper">
+                    <i class="fas fa-hospital-symbol"></i>
+                    <span>MediCare</span>
+                </div>
+            </div>
+            <div class="features-section">
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fas fa-heartbeat"></i></div>
+                    <h3>Health Monitoring</h3>
+                    <p>Real-time tracking of vital signs and metrics</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fas fa-pills"></i></div>
+                    <h3>Medication</h3>
+                    <p>Manage prescriptions & refill requests easily</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fas fa-user-md"></i></div>
+                    <h3>Doctor Access</h3>
+                    <p>Connect with healthcare professionals 24/7</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Panel -->
+        <div class="login-panel auth-panel">
+            <div class="auth-content">
+                <h1>Welcome Back</h1>
+                <p class="subtitle">Sign in with your username or email</p>
+
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        <div class="flash-wrapper">
+                            {% for category, message in messages %}
+                                <div class="alert alert-{{ category }}">
+                                    <i class="fas fa-info-circle"></i>
+                                    {{ message }}
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                {% endwith %}
+
+                <form method="POST" class="login-form" id="loginForm" novalidate>
+                    <div class="form-group">
+                        <label for="username">
+                            <i class="fas fa-user"></i> Username or Email
+                        </label>
+                        <input
+                            type="text"
+                            id="username"
+                            name="username"
+                            required
+                            autocomplete="username"
+                            placeholder="Enter username or email">
+                        <div class="error-message" data-error-for="username"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="password">
+                            <i class="fas fa-lock"></i> Password
+                        </label>
+                        <div class="password-input-group">
+                            <input
+                                type="password"
+                                id="password"
+                                name="password"
+                                required
+                                autocomplete="current-password"
+                                placeholder="Enter your password">
+                            <button type="button" class="toggle-password" aria-label="Toggle password visibility">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                        <div class="error-message" data-error-for="password"></div>
+                    </div>
+
+                    <div class="form-options">
+                        <label class="remember-me">
+                            <input type="checkbox" name="remember">
+                            <span class="checkmark"></span>
+                            Remember me
+                        </label>
+                        <a href="#" class="forgot-password">Forgot password?</a>
+                    </div>
+
+                    <button type="submit" class="submit-btn" id="loginSubmitBtn">
+                        <span>Sign In</span>
+                        <i class="fas fa-arrow-right"></i>
+                    </button>
+                </form>
+
+                <div class="auth-footer">
+                    <p>Don't have an account?
+                        <a href="{{ url_for('register') }}" class="register-link">
+                            Create Account <i class="fas fa-chevron-right"></i>
+                        </a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Toggle password visibility
+        document.querySelector('.toggle-password').addEventListener('click', function() {
+            const input = document.getElementById('password');
+            const icon = this.querySelector('i');
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.replace('fa-eye','fa-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.replace('fa-eye-slash','fa-eye');
+            }
+        });
+
+        // Trim inputs on submit & basic client validation
+        document.getElementById('loginForm').addEventListener('submit', function(e){
+            const u = document.getElementById('username');
+            const p = document.getElementById('password');
+            u.value = u.value.trim();
+            p.value = p.value;
+            let ok = true;
+            if(!u.value){
+                showError('username','Username or Email is required');
+                ok = false;
+            }
+            if(!p.value){
+                showError('password','Password is required');
+                ok = false;
+            }
+            if(!ok){
+                e.preventDefault();
+                return;
+            }
+            disableButton('loginSubmitBtn');
+        });
+
+        function showError(field, msg){
+            const el = document.querySelector('[data-error-for="'+field+'"]');
+            if(el){ el.textContent = msg; }
+        }
+
+        function disableButton(id){
+            const btn = document.getElementById(id);
+            if(btn){
+                btn.disabled = true;
+                btn.classList.add('is-loading');
+            }
+        }
+
+        // Auto-hide flash messages
+        setTimeout(() => {
+            document.querySelectorAll('.alert').forEach(a=>{
+                a.style.opacity = '0';
+                setTimeout(()=>a.remove(),500);
+            });
+        }, 3000);
+    </script>
+</body>
+</html>

@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}MediCare Portal{% endblock %}</title>
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
+    <!-- Fonts & Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    {% block extra_css %}{% endblock %}
+
+    <!-- Custom dropdown CSS -->
+    <style>
+        .custom-dropdown { position: relative; display: inline-block; }
+        .dropdown-menu { display: none; position: absolute; right: 0; top: 100%; background: white; border: 1px solid #ddd; border-radius: 4px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); z-index: 1000; min-width: 150px; }
+        .dropdown-menu.show { display: block; }
+        .dropdown-item { display: block; padding: 8px 12px; color: #333; text-decoration: none; border-bottom: 1px solid #f0f0f0; }
+        .dropdown-item:hover { background: #f8f9fa; }
+        .dropdown-item:last-child { border-bottom: none; }
+        .dropdown-divider { height: 1px; background: #e9ecef; margin: 0; }
+        .text-danger { color: #dc3545 !important; }
+    </style>
+</head>
+<body class="medilab-theme">
+
+    <!-- Sidebar -->
+    <nav class="sidebar">
+        <div class="sidebar-header">
+            <div class="logo"><i class="fas fa-hospital-symbol"></i><span>MediCare</span></div>
+        </div>
+        <div class="sidebar-menu">
+            <a href="{{ url_for('home_dashboard') }}" class="menu-item {% if request.endpoint == 'home_dashboard' %}active{% endif %}">
+                <i class="fas fa-home"></i><span>Dashboard</span>
+            </a>
+            <a href="{{ url_for('medicine') }}" class="menu-item {% if request.endpoint == 'medicine' %}active{% endif %}">
+                <i class="fas fa-pills"></i><span>Medicine</span>
+            </a>
+            <a href="{{ url_for('report') }}" class="menu-item {% if request.endpoint == 'report' %}active{% endif %}">
+                <i class="fas fa-file-medical"></i><span>Reports</span>
+            </a>
+            <a href="{{ url_for('chatbot') }}" class="menu-item {% if request.endpoint == 'chatbot' %}active{% endif %}">
+                <i class="fas fa-robot"></i><span>AI Chatbot</span>
+            </a>
+            <a href="{{ url_for('profile') }}" class="menu-item {% if request.endpoint == 'profile' %}active{% endif %}">
+                <i class="fas fa-user"></i><span>Profile</span>
+            </a>
+            <a href="{{ url_for('contact') }}" class="menu-item {% if request.endpoint == 'contact' %}active{% endif %}">
+                <i class="fas fa-phone-alt"></i><span>Contact</span>
+            </a>
+        </div>
+        <div class="sidebar-footer">
+            <a href="{{ url_for('logout') }}" class="menu-item"><i class="fas fa-sign-out-alt"></i><span>Logout</span></a>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <header class="top-header">
+            <div class="header-left">
+                <button class="menu-toggle"><i class="fas fa-bars"></i></button>
+                <div class="page-title">{% block page_title %}MediCare Portal{% endblock %}</div>
+            </div>
+            <div class="header-right">
+                <div class="header-actions">
+                    <button class="support-btn" onclick="window.location.href='{{ url_for('chatbot') }}'">
+                        <i class="fas fa-headset"></i> 24/7 Support
+                    </button>
+                    <button class="emergency-btn" onclick="handleEmergency()">
+                        <i class="fas fa-phone"></i> Emergency
+                    </button>
+                </div>
+                <div class="user-info">
+                    <span class="user-name">{{ display_username }}</span>
+                    <span class="time-display" id="current-time">{{ current_time }}</span>
+                </div>
+            </div>
+        </header>
+
+        <div class="content-wrapper">
+            <!-- Flash Messages -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+              {% if messages %}
+                {% for category, message in messages %}
+                  <div class="alert alert-{{ 'danger' if category=='error' else category }}">
+                    <i class="fas fa-{% if category=='success' %}check-circle{% elif category=='error' %}exclamation-triangle{% else %}info-circle{% endif %}"></i>
+                    {{ message }}
+                    <button class="alert-close" onclick="this.parentElement.remove()">&times;</button>
+                  </div>
+                {% endfor %}
+              {% endif %}
+            {% endwith %}
+            
+            {% block content %}{% endblock %}
+        </div>
+    </main>
+
+    <!-- Floating AI Chatbot Button -->
+    <div class="floating-chat-btn" onclick="window.location.href='{{ url_for('chatbot') }}'">
+        <div class="chat-btn-content"><i class="fas fa-robot"></i></div>
+        <div class="chat-btn-label">AI Assistant</div>
+    </div>
+
+    <!-- JS -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="{{ url_for('static', filename='js/main.js') }}" defer></script>
+    <script src="{{ url_for('static', filename='js/metrics_pro.js') }}" defer></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

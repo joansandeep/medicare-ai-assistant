@@ -1,0 +1,490 @@
+{% extends 'base.html' %}
+{% block title %}Contact Us - MediCare Portal{% endblock %}
+{% block page_title %}Contact Support{% endblock %}
+
+{% block extra_css %}
+<style>
+/* Contact Page Specific Styles */
+.contact-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+.contact-hero {
+  text-align: center;
+  padding: 3rem 0;
+  background: linear-gradient(135deg, var(--primary-red), var(--primary-dark-red));
+  color: white;
+  border-radius: var(--border-radius-lg);
+  margin-bottom: 3rem;
+}
+
+.contact-hero h1 {
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+  font-weight: var(--font-weight-bold);
+}
+
+.contact-hero p {
+  font-size: 1.1rem;
+  opacity: 0.9;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+/* Contact Grid */
+.contact-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  margin-bottom: 3rem;
+}
+
+.contact-card {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--border-radius-lg);
+  padding: 2rem;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.3s ease;
+}
+
+.contact-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+}
+
+.contact-card-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.contact-icon {
+  width: 48px;
+  height: 48px;
+  background: var(--primary-gradient);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 1.5rem;
+}
+
+.emergency .contact-icon {
+  background: linear-gradient(135deg, var(--emergency-red), #d32f2f);
+}
+
+.support .contact-icon {
+  background: linear-gradient(135deg, var(--secondary-blue), var(--secondary-dark-blue));
+}
+
+.location .contact-icon {
+  background: linear-gradient(135deg, var(--medical-green), #388e3c);
+}
+
+.contact-card h3 {
+  font-size: 1.25rem;
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.contact-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.contact-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  background: var(--page-bg);
+  border-radius: var(--border-radius);
+  transition: all 0.3s ease;
+}
+
+.contact-item:hover {
+  background: rgba(102, 47, 211, 0.05);
+}
+
+.contact-item i {
+  width: 20px;
+  color: var(--primary-red);
+  font-size: 1rem;
+}
+
+.contact-item-content {
+  flex: 1;
+}
+
+.contact-item-label {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  margin-bottom: 0.25rem;
+}
+
+.contact-item-value {
+  font-weight: var(--font-weight-medium);
+  color: var(--text-primary);
+}
+
+.contact-item-value a {
+  color: var(--primary-red);
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.contact-item-value a:hover {
+  color: var(--primary-dark-red);
+}
+
+/* Quick Actions */
+.quick-actions {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--border-radius-lg);
+  padding: 2rem;
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.quick-actions h3 {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+  color: var(--text-primary);
+}
+
+.quick-actions p {
+  color: var(--text-secondary);
+  margin-bottom: 2rem;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.action-btn {
+  background: var(--primary-gradient);
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: var(--border-radius);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-decoration: none;
+}
+
+.action-btn:hover {
+  background: var(--primary-dark-red);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.action-btn.secondary {
+  background: var(--secondary-gradient);
+}
+
+.action-btn.success {
+  background: var(--medical-gradient);
+}
+
+/* FAQ Section */
+.faq-section {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--border-radius-lg);
+  padding: 2rem;
+  margin-bottom: 3rem;
+}
+
+.faq-section h3 {
+  font-size: 1.5rem;
+  margin-bottom: 2rem;
+  color: var(--text-primary);
+  text-align: center;
+}
+
+.faq-item {
+  margin-bottom: 1.5rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid var(--card-border);
+}
+
+.faq-item:last-child {
+  margin-bottom: 0;
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+.faq-question {
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+  font-size: 1rem;
+}
+
+.faq-answer {
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+/* Office Hours */
+.hours-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.hours-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.75rem;
+  background: var(--page-bg);
+  border-radius: var(--border-radius);
+}
+
+.hours-day {
+  font-weight: var(--font-weight-medium);
+}
+
+.hours-time {
+  color: var(--text-secondary);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .contact-grid {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+  
+  .contact-hero {
+    padding: 2rem 1rem;
+  }
+  
+  .contact-hero h1 {
+    font-size: 2rem;
+  }
+  
+  .contact-card {
+    padding: 1.5rem;
+  }
+  
+  .action-buttons {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .action-btn {
+    width: 100%;
+    max-width: 300px;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .contact-container {
+    padding: 0 0.5rem;
+  }
+  
+  .contact-hero h1 {
+    font-size: 1.75rem;
+  }
+  
+  .hours-grid {
+    grid-template-columns: 1fr;
+  }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="contact-container">
+  <!-- Hero Section -->
+  <div class="contact-hero">
+    <h1>We're Here to Help</h1>
+    <p>Get in touch with our support team for assistance with your healthcare portal or any medical inquiries.</p>
+  </div>
+
+  <!-- Contact Grid -->
+  <div class="contact-grid">
+    <!-- Emergency Contact -->
+    <div class="contact-card emergency">
+      <div class="contact-card-header">
+        <div class="contact-icon">
+          <i class="fas fa-phone-alt"></i>
+        </div>
+        <h3>Emergency Support</h3>
+      </div>
+      <div class="contact-info">
+        <div class="contact-item">
+          <i class="fas fa-exclamation-triangle"></i>
+          <div class="contact-item-content">
+            <div class="contact-item-label">24/7 Emergency Hotline</div>
+            <div class="contact-item-value">
+              <a href="tel:+919876543210">+91 98765 43210</a>
+            </div>
+          </div>
+        </div>
+        <div class="contact-item">
+          <i class="fas fa-clock"></i>
+          <div class="contact-item-content">
+            <div class="contact-item-label">Availability</div>
+            <div class="contact-item-value">24/7 Emergency Response</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- General Support -->
+    <div class="contact-card support">
+      <div class="contact-card-header">
+        <div class="contact-icon">
+          <i class="fas fa-headset"></i>
+        </div>
+        <h3>General Support</h3>
+      </div>
+      <div class="contact-info">
+        <div class="contact-item">
+          <i class="fas fa-phone"></i>
+          <div class="contact-item-content">
+            <div class="contact-item-label">Support Line</div>
+            <div class="contact-item-value">
+              <a href="tel:+918023456789">+91 80 2345 6789</a>
+            </div>
+          </div>
+        </div>
+        <div class="contact-item">
+          <i class="fas fa-envelope"></i>
+          <div class="contact-item-content">
+            <div class="contact-item-label">Email Support</div>
+            <div class="contact-item-value">
+              <a href="mailto:support@medicareportal.com">support@medicareportal.com</a>
+            </div>
+          </div>
+        </div>
+        <div class="contact-item">
+          <i class="fas fa-clock"></i>
+          <div class="contact-item-content">
+            <div class="contact-item-label">Response Time</div>
+            <div class="contact-item-value">Within 2 hours</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Office Location -->
+    <div class="contact-card location">
+      <div class="contact-card-header">
+        <div class="contact-icon">
+          <i class="fas fa-map-marker-alt"></i>
+        </div>
+        <h3>Visit Our Office</h3>
+      </div>
+      <div class="contact-info">
+        <div class="contact-item">
+          <i class="fas fa-building"></i>
+          <div class="contact-item-content">
+            <div class="contact-item-label">Address</div>
+            <div class="contact-item-value">
+              123 Healthcare Drive<br>
+              Medical District<br>
+              Bengaluru, Karnataka 560001
+            </div>
+          </div>
+        </div>
+        <div class="contact-item">
+          <i class="fas fa-subway"></i>
+          <div class="contact-item-content">
+            <div class="contact-item-label">Transportation</div>
+            <div class="contact-item-value">MG Road Metro (5 min walk)</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Office Hours -->
+    <div class="contact-card">
+      <div class="contact-card-header">
+        <div class="contact-icon">
+          <i class="fas fa-clock"></i>
+        </div>
+        <h3>Office Hours</h3>
+      </div>
+      <div class="hours-grid">
+        <div class="hours-item">
+          <span class="hours-day">Monday - Friday</span>
+          <span class="hours-time">9:00 AM - 6:00 PM</span>
+        </div>
+        <div class="hours-item">
+          <span class="hours-day">Saturday</span>
+          <span class="hours-time">10:00 AM - 4:00 PM</span>
+        </div>
+        <div class="hours-item">
+          <span class="hours-day">Sunday</span>
+          <span class="hours-time">Closed</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Actions -->
+  <div class="quick-actions">
+    <h3>Quick Actions</h3>
+    <p>Get instant help or start a conversation with our support team</p>
+    <div class="action-buttons">
+      <a href="/chatbot" class="action-btn">
+        <i class="fas fa-comments"></i>
+        Live Chat
+      </a>
+      <a href="mailto:support@medicareportal.com" class="action-btn secondary">
+        <i class="fas fa-envelope"></i>
+        Send Email
+      </a>
+      <a href="tel:+918023456789" class="action-btn success">
+        <i class="fas fa-phone"></i>
+        Call Support
+      </a>
+    </div>
+  </div>
+
+  <!-- FAQ Section -->
+  <div class="faq-section">
+    <h3>Frequently Asked Questions</h3>
+    
+    <div class="faq-item">
+      <div class="faq-question">How do I request medications?</div>
+      <div class="faq-answer">Go to the Medicine section from your dashboard, fill in the medicine name and quantity, then submit your request. You'll receive updates via email and in your activities.</div>
+    </div>
+    
+    <div class="faq-item">
+      <div class="faq-question">How can I access my medical reports?</div>
+      <div class="faq-answer">All your medical reports are available in the Reports section. You can view, download, and share them with your healthcare providers as needed.</div>
+    </div>
+    
+    <div class="faq-item">
+      <div class="faq-question">Is my medical data secure?</div>
+      <div class="faq-answer">Yes, we use bank-level encryption and follow strict HIPAA compliance standards. Your data is stored securely and is never shared without your explicit consent.</div>
+    </div>
+    
+    <div class="faq-item">
+      <div class="faq-question">How long does medicine processing take?</div>
+      <div class="faq-answer">Common medicines are processed within 2-4 hours, specialized medicines take 1-2 days, and emergency requests are handled within 30 minutes.</div>
+    </div>
+  </div>
+</div>
+{% endblock %}

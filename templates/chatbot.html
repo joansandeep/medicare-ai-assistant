@@ -1,0 +1,772 @@
+{% extends 'base.html' %}
+{% block title %}AI Assistant - MediCare{% endblock %}
+{% block page_title %}AI Healthcare Assistant{% endblock %}
+
+{% block extra_css %}
+<style>
+.file-attachment-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #f0f8ff;
+  border: 1px solid #007bff;
+  border-radius: 8px;
+  padding: 8px 12px;
+  margin: 8px 20px;
+  font-size: 14px;
+  color: #007bff;
+}
+
+.file-attachment-name {
+  flex: 1;
+  font-weight: 500;
+}
+
+.file-attachment-remove {
+  background: none;
+  border: none;
+  color: #dc3545;
+  font-size: 18px;
+  font-weight: bold;
+  cursor: pointer;
+  padding: 0;
+  margin-left: 8px;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background-color 0.2s;
+}
+
+.file-attachment-remove:hover {
+  background-color: #dc3545;
+  color: white;
+}
+
+/* Medical Disclaimer Banner */
+.medical-disclaimer-banner {
+  background: linear-gradient(135deg, #fff3cd, #ffeaa7);
+  border: 2px solid #f39c12;
+  border-radius: 8px;
+  padding: 8px 12px;
+  margin-bottom: 10px;
+  font-size: 0.85em;
+  color: #856404;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 2px 8px rgba(243, 156, 18, 0.3);
+}
+
+.medical-disclaimer-banner i {
+  color: #f39c12;
+  font-size: 1em;
+  flex-shrink: 0;
+}
+
+.medical-disclaimer-banner strong {
+  color: #6c5ce7;
+}
+
+/* Chat History Styling */
+.chat-session-item {
+  padding: 10px 15px;
+  border-radius: 8px;
+  margin-bottom: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  border: 1px solid #e0e0e0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.chat-session-item:hover {
+  background-color: #f5f5f5;
+}
+
+.chat-session-item.active {
+  background-color: #e7f3ff;
+  border-color: #007bff;
+}
+
+.session-preview {
+  flex: 1;
+  min-width: 0;
+}
+
+.session-title {
+  font-weight: 500;
+  color: #333;
+  margin-bottom: 4px;
+  font-size: 0.9em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.session-meta {
+  font-size: 0.8em;
+  color: #666;
+}
+
+.session-actions {
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.chat-session-item:hover .session-actions {
+  opacity: 1;
+}
+
+.delete-session-btn {
+  background: none;
+  border: none;
+  color: #dc3545;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.9em;
+}
+
+.delete-session-btn:hover {
+  background-color: #f8d7da;
+}
+
+.no-history {
+  text-align: center;
+  color: #666;
+  font-size: 0.9em;
+  padding: 20px;
+  font-style: italic;
+}
+
+/* Enhanced streaming cursor with better animation */
+.streaming-cursor {
+  display: inline-block;
+  width: 2px;
+  height: 16px;
+  background: linear-gradient(180deg, #007bff, #0056b3);
+  margin-left: 3px;
+  animation: pulse-cursor 1.2s ease-in-out infinite;
+  border-radius: 1px;
+}
+
+@keyframes pulse-cursor {
+  0%, 50% { opacity: 1; transform: scaleY(1); }
+  25% { opacity: 0.7; transform: scaleY(0.8); }
+  75% { opacity: 0.3; transform: scaleY(1.1); }
+}
+
+/* Smooth text appearance animation */
+.typing-char {
+  opacity: 0;
+  animation: fadeInChar 0.1s ease-out forwards;
+}
+
+@keyframes fadeInChar {
+  from { 
+    opacity: 0; 
+    transform: translateY(2px); 
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0); 
+  }
+}
+
+/* Enhanced typing indicator dots */
+.typing-dot {
+  width: 8px;
+  height: 8px;
+  background: #007bff;
+  border-radius: 50%;
+  display: inline-block;
+  margin: 0 2px;
+  animation: typing-bounce 1.4s ease-in-out infinite;
+}
+
+.typing-dot:nth-child(2) { animation-delay: 0.2s; }
+.typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes typing-bounce {
+  0%, 60%, 100% { transform: translateY(0); opacity: 0.5; }
+  30% { transform: translateY(-10px); opacity: 1; }
+}
+
+/* Message fade-in effect */
+.message {
+  animation: slideInMessage 0.3s ease-out;
+}
+
+@keyframes slideInMessage {
+  from { 
+    opacity: 0; 
+    transform: translateY(10px); 
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0); 
+  }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Mobile menu toggle -->
+<button class="menu-toggle" id="menuToggle">
+  <i class="fas fa-bars"></i>
+</button>
+
+<!-- Mobile overlay -->
+<div class="mobile-overlay" id="mobileOverlay"></div>
+
+<div class="chatbot-container">
+  <!-- Sidebar -->
+  <div class="chat-sidebar" id="chatSidebar">
+    <div class="sidebar-header">
+      <button class="new-chat-btn" id="newChatBtn">
+        <i class="fas fa-plus"></i>
+        <span>New chat</span>
+      </button>
+    </div>
+
+    <div class="chat-history" id="chatHistory">
+      <!-- Chat history items will be populated here -->
+    </div>
+  </div>
+
+  <!-- Main chat area -->
+  <div class="chat-main">
+    <!-- Header -->
+    <div class="chat-header">
+      <div class="chat-title">
+        <i class="fas fa-stethoscope"></i>
+        MediCare AI Assistant
+      </div>
+      <div class="model-selector">
+        Llama 3 Healthcare
+      </div>
+    </div>
+
+    <!-- Messages -->
+    <div class="chat-messages" id="chatMessages">
+      <!-- Welcome screen -->
+      <div class="welcome-screen" id="welcomeScreen">
+        <h1>What can I help with?</h1>
+
+        <div class="welcome-suggestions">
+          <div class="suggestion-card" data-prompt="I need help scheduling an appointment">
+            <h3>Schedule Appointment</h3>
+            <p>Book a new appointment with your healthcare provider</p>
+          </div>
+
+          <div class="suggestion-card" data-prompt="How do I request medications?">
+            <h3>Request Medications</h3>
+            <p>Learn how to request prescriptions through the portal</p>
+          </div>
+
+          <div class="suggestion-card" data-prompt="Show me my health data">
+            <h3>View Health Data</h3>
+            <p>Access your vitals, reports, and health trends</p>
+          </div>
+
+          <div class="suggestion-card" data-prompt="I need emergency assistance">
+            <h3>Emergency Help</h3>
+            <p>Get immediate assistance for urgent medical needs</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Input area -->
+    <div class="chat-input-area">
+      <!-- Medical Disclaimer Banner -->
+
+      
+      <div class="chat-input-container">
+        <div class="chat-input-wrapper">
+          <textarea 
+            class="input-field" 
+            placeholder="Message MediCare AI Assistant..."
+            rows="1"
+            id="messageInput"></textarea>
+
+          <div class="input-actions">
+            <button class="attach-btn" type="button" title="Attach file">
+              <i class="fas fa-paperclip"></i>
+            </button>
+            <button class="send-btn" type="button" id="sendBtn" title="Send message" disabled>
+              <i class="fas fa-paper-plane"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="input-hints">
+          Press Enter to send, Shift+Enter for new line
+        </div>
+      </div>
+  </div>
+</div>
+
+<input type="file" id="fileUpload" style="display: none;" accept="image/*,.pdf,.doc,.docx">
+    </div>
+          <div class="medical-disclaimer-banner">
+        <i class="fas fa-shield-alt"></i>
+        <small>
+          <strong>Medical Disclaimer:</strong> This AI provides educational information only. 
+          Always consult healthcare professionals for medical advice.
+        </small>
+      </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+/* ENHANCED STREAMING CHATBOT */
+class ChatGPTBot {
+  constructor(){
+    this.attachedFile=null;
+    this.sessionId=`session_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+    this.initializeElements();
+    this.initializeEventListeners();
+    this.messages=[];
+    this.loadChatSessions();
+  }
+  initializeElements(){
+    this.messageInput=document.getElementById('messageInput');
+    this.sendButton=document.getElementById('sendBtn');
+    this.messagesContainer=document.getElementById('chatMessages');
+    this.welcomeScreen=document.getElementById('welcomeScreen');
+    this.newChatBtn=document.getElementById('newChatBtn');
+    this.menuToggle=document.getElementById('menuToggle');
+    this.sidebar=document.getElementById('chatSidebar');
+    this.overlay=document.getElementById('mobileOverlay');
+    this.fileUpload=document.getElementById('fileUpload');
+    this.fileAttachmentBar=this.createFileAttachmentBar();
+  }
+  initializeEventListeners(){
+    this.sendButton.addEventListener('click',()=>this.sendMessage());
+    this.messageInput.addEventListener('keydown',e=>{
+      if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); this.sendMessage(); }
+    });
+    document.querySelectorAll('.suggestion-card').forEach(c=>{
+      c.addEventListener('click',()=>{
+        this.messageInput.value=c.dataset.prompt;
+        this.sendButton.disabled=false;
+        this.sendMessage();
+      });
+    });
+    this.newChatBtn.addEventListener('click',()=>this.startNewChat());
+    this.menuToggle?.addEventListener('click',()=>this.toggleMobileMenu());
+    this.overlay?.addEventListener('click',()=>this.closeMobileMenu());
+    document.querySelector('.attach-btn').addEventListener('click',()=>this.fileUpload.click());
+    this.fileUpload.addEventListener('change',e=>this.handleFile(e));
+    this.messageInput.addEventListener('input',()=>{
+      this.messageInput.style.height='auto';
+      this.messageInput.style.height=Math.min(this.messageInput.scrollHeight,120)+'px';
+      this.sendButton.disabled=!this.messageInput.value.trim();
+    });
+  }
+  handleFile(e){
+    const file=e.target.files[0];
+    if(!file) return;
+    this.addMessage(`Uploading PDF: ${file.name} ...`,'user');
+    const fd=new FormData(); fd.append('file',file);
+    fetch('/upload',{method:'POST',body:fd})
+      .then(r=>r.json())
+      .then(d=>{
+        if(d.cid){
+          this.attachedFile={cid:d.cid,filename:file.name};
+          this.showFileAttachmentBar();
+          this.addMessage(`PDF uploaded! ${file.name}\nYou can ask questions about it now.`,'ai',true);
+        } else this.addMessage('PDF upload failed.','ai',true);
+      })
+      .catch(()=>this.addMessage('Error uploading PDF.','ai',true))
+      .finally(()=>{ e.target.value=''; });
+  }
+  addMessage(content,sender,stream=false){
+    if(!stream || sender!=='ai'){
+      const div=document.createElement('div');
+      div.className=`message ${sender}-message`;
+      div.innerHTML=`<div class="message-content">
+        <div class="message-avatar"><i class="fas ${sender==='user'?'fa-user':'fa-robot'}"></i></div>
+        <div class="message-text">${this.formatMessage(content)}</div>
+      </div>`;
+      this.messagesContainer.appendChild(div);
+      this.scrollToBottom();
+      return;
+    }
+    
+    // Enhanced streaming with word-by-word and smooth effects
+    const div=document.createElement('div');
+    div.className='message ai-message';
+    div.innerHTML=`<div class="message-content">
+      <div class="message-avatar"><i class="fas fa-robot"></i></div>
+      <div class="message-text"><span class="streaming-cursor"></span></div>
+    </div>`;
+    
+    const textEl=div.querySelector('.message-text');
+    const cursor=div.querySelector('.streaming-cursor');
+    this.messagesContainer.appendChild(div);
+    this.scrollToBottom();
+    
+    // Split content into words for better streaming
+    const words = content.split(' ');
+    let currentWordIndex = 0;
+    let currentCharIndex = 0;
+    let currentWord = '';
+    
+    const typeNextChar = () => {
+      if (currentWordIndex >= words.length) {
+        // Finished typing - replace with fully formatted content
+        textEl.innerHTML = this.formatMessage(content);
+        return;
+      }
+      
+      // Get current word
+      const word = words[currentWordIndex];
+      
+      if (currentCharIndex === 0) {
+        // Starting new word - add space if not first word
+        if (currentWordIndex > 0) {
+          const spaceSpan = document.createElement('span');
+          spaceSpan.textContent = ' ';
+          spaceSpan.className = 'typing-char';
+          textEl.insertBefore(spaceSpan, cursor);
+        }
+        currentWord = '';
+      }
+      
+      if (currentCharIndex < word.length) {
+        // Add character with animation
+        const char = word[currentCharIndex];
+        const charSpan = document.createElement('span');
+        charSpan.textContent = char;
+        charSpan.className = 'typing-char';
+        textEl.insertBefore(charSpan, cursor);
+        
+        currentWord += char;
+        currentCharIndex++;
+        
+        // Scroll every few characters
+        if (currentCharIndex % 5 === 0) {
+          this.scrollToBottom();
+        }
+        
+        // Variable speed: slower for punctuation, faster for normal chars
+        let delay = 25; // base speed
+        if (['.', '!', '?', ':'].includes(char)) {
+          delay = 150; // pause after sentences
+        } else if ([',', ';'].includes(char)) {
+          delay = 100; // pause after commas
+        } else if (char === ' ') {
+          delay = 40; // quick spaces
+        }
+        
+        setTimeout(typeNextChar, delay);
+      } else {
+        // Finished current word, move to next
+        currentWordIndex++;
+        currentCharIndex = 0;
+        
+        // Brief pause between words
+        setTimeout(typeNextChar, 60);
+      }
+    };
+    
+    // Start typing with small delay
+    setTimeout(typeNextChar, 200);
+  }
+  formatMessage(t){
+    return t.replace(/\n/g,'<br>')
+            .replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')
+            .replace(/\*(.*?)\*/g,'<em>$1</em>')
+            .replace(/`(.*?)`/g,'<code>$1</code>')
+            .replace(/__(.*?)__/g,'<u>$1</u>');
+  }
+  showTypingIndicator(){
+    const div=document.createElement('div');
+    div.className='message ai-message typing';
+    div.innerHTML=`<div class="message-content">
+      <div class="message-avatar"><i class="fas fa-robot"></i></div>
+      <div class="message-text">
+        <div class="typing-indicator" style="display: flex; align-items: center; gap: 4px;">
+          <span style="font-size: 14px; color: #666; margin-right: 8px;">AI is thinking</span>
+          <div class="typing-dot"></div>
+          <div class="typing-dot"></div>
+          <div class="typing-dot"></div>
+        </div>
+      </div>
+    </div>`;
+    this.messagesContainer.appendChild(div);
+    this.scrollToBottom();
+  }
+  hideTypingIndicator(){ const t=this.messagesContainer.querySelector('.typing'); if(t) t.remove(); }
+  async sendMessage(){
+    const msg=this.messageInput.value.trim();
+    if(!msg) return;
+    if(this.welcomeScreen) this.welcomeScreen.style.display='none';
+    
+    // Add user message with slide animation
+    this.addMessage(msg,'user');
+    this.messageInput.value=''; 
+    this.messageInput.style.height='auto';
+    this.sendButton.disabled=true;
+    
+    // Show enhanced typing indicator
+    this.showTypingIndicator();
+    
+    try{
+      const resp=await this.getAIResponse(msg);
+      this.hideTypingIndicator();
+      
+      // Add AI response with streaming effect
+      this.addMessage(resp,'ai',true);
+      this.loadChatSessions();
+    }catch(e){
+      this.hideTypingIndicator();
+      this.addMessage('Sorry, I encountered an error. Please try again.','ai',true);
+    }
+  }
+  async getAIResponse(message){
+    const cidMatch=message.match(/Qm[1-9A-HJ-NP-Za-km-z]{44,}/);
+    let msgToSend=message;
+    if(this.attachedFile && /pdf|report|document|file|summarize|what|which|show|list|details|info|information|about|explain/i.test(message)){
+      msgToSend+=`\n${this.attachedFile.cid}`;
+    }
+    const r=await fetch('/api/chat',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({messages:[{role:'user',content:msgToSend}],session_id:this.sessionId})
+    });
+    const data=await r.json();
+    if(data.session_id) this.sessionId=data.session_id;
+    if(cidMatch && !this.attachedFile){
+      this.attachedFile={cid:cidMatch[0],filename:`Report ${cidMatch[0].slice(0,8)}...`};
+      this.showFileAttachmentBar();
+    }
+    return data.content||'No response.';
+  }
+  async loadChatSessions(){
+    try{
+      const r=await fetch('/api/chat/history');
+      const d=await r.json();
+      if(d.status==='success') this.renderChatHistory(d.sessions);
+    }catch(_){}
+  }
+  renderChatHistory(sessions){
+    const box=document.getElementById('chatHistory');
+    box.innerHTML='';
+    if(!sessions.length){ box.innerHTML='<div class="no-history">No chat history yet</div>'; return; }
+    sessions.forEach(s=>{
+      const div=document.createElement('div');
+      div.className='chat-session-item';
+      div.dataset.sessionId=s.session_id;
+      const title=s.first_user_message? (s.first_user_message.length>40? s.first_user_message.slice(0,40)+'...' : s.first_user_message) : 'New Conversation';
+      const last=new Date(s.last_message);
+      const time=this.getTimeAgo(last);
+      div.innerHTML=`<div class="session-preview">
+        <div class="session-title">${title}</div>
+        <div class="session-meta">${s.message_count} messages • ${time}</div>
+      </div>
+      <div class="session-actions">
+        <button class="delete-session-btn" data-session-id="${s.session_id}" title="Delete"><i class="fas fa-trash"></i></button>
+      </div>`;
+      div.addEventListener('click',e=>{
+        if(!e.target.closest('.delete-session-btn')){
+          this.loadChatSession(s.session_id);
+          this.highlightActiveSession(s.session_id);
+        }
+      });
+      div.querySelector('.delete-session-btn').addEventListener('click',e=>{
+        e.stopPropagation(); this.deleteChatSession(s.session_id);
+      });
+      box.appendChild(div);
+    });
+  }
+  async loadChatSession(id){
+    try{
+      const r=await fetch(`/api/chat/history/${id}`);
+      const d=await r.json();
+      if(d.status==='success'){
+        this.sessionId=id;
+        this.messagesContainer.innerHTML='';
+        this.welcomeScreen.style.display='none';
+        this.attachedFile=null; this.hideFileAttachmentBar();
+        d.messages.forEach(m=>{
+          this.addMessage(m.message_content,m.message_type);
+          if(m.pdf_cid && m.message_type==='ai'){
+            this.attachedFile={cid:m.pdf_cid,filename:`Report ${m.pdf_cid.slice(0,8)}...`};
+            this.showFileAttachmentBar();
+          }
+        });
+        
+        this.scrollToBottom();
+        this.closeMobileMenu(); // Close mobile menu after loading session
+      }
+    } catch (error) {
+      console.error('Error loading chat session:', error);
+      this.addMessage('Error loading conversation. Please try again.', 'ai');
+    }
+  }
+
+  async deleteChatSession(sessionId) {
+    if (!confirm('Are you sure you want to delete this conversation? This cannot be undone.')) {
+      return;
+    }
+    
+    try {
+      const response = await fetch('/api/chat/delete_session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ session_id: sessionId })
+      });
+      
+      if (response.ok) {
+        // If we deleted the current session, start a new chat
+        if (sessionId === this.sessionId) {
+          this.startNewChat();
+        } else {
+          // Just refresh the chat history
+          this.loadChatSessions();
+        }
+      } else {
+        alert('Error deleting conversation. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error deleting chat session:', error);
+      alert('Error deleting conversation. Please try again.');
+    }
+  }
+
+  highlightActiveSession(sessionId) {
+    // Remove active class from all sessions
+    document.querySelectorAll('.chat-session-item').forEach(item => {
+      item.classList.remove('active');
+    });
+    
+    // Add active class to current session
+    const activeSession = document.querySelector(`[data-session-id="${sessionId}"]`);
+    if (activeSession) {
+      activeSession.classList.add('active');
+    }
+  }
+
+  getTimeAgo(date) {
+    const now = new Date();
+    const diffInSeconds = Math.floor((now - date) / 1000);
+    
+    if (diffInSeconds < 60) return 'just now';
+    if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`;
+    if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`;
+    if (diffInSeconds < 604800) return `${Math.floor(diffInSeconds / 86400)}d ago`;
+    
+    return date.toLocaleDateString();
+  }
+
+  scrollToBottom() {
+    this.messagesContainer.scrollTop = this.messagesContainer.scrollHeight;
+  }
+
+  startNewChat() {
+    this.messagesContainer.innerHTML = '';
+    if (this.welcomeScreen) {
+      this.welcomeScreen.style.display = 'flex';
+    }
+    this.messages = [];
+    this.attachedFile = null;
+    this.hideFileAttachmentBar();
+    this.closeMobileMenu();
+    
+    // Generate new session ID
+    this.sessionId = `session_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+    
+    // Refresh chat history
+    this.loadChatSessions();
+  }
+
+  createFileAttachmentBar() {
+    const bar = document.createElement('div');
+    bar.className = 'file-attachment-bar';
+    bar.style.display = 'none';
+    bar.innerHTML = `
+      <span class="file-attachment-name"></span>
+      <button class="file-attachment-remove" title="Remove file">&times;</button>
+    `;
+    document.querySelector('.chat-main').insertBefore(bar, document.querySelector('.chat-input-area'));
+    bar.querySelector('.file-attachment-remove').addEventListener('click', () => {
+      this.attachedFile = null;
+      this.hideFileAttachmentBar();
+    });
+    return bar;
+  }
+
+  showFileAttachmentBar() {
+    if (this.attachedFile) {
+      this.fileAttachmentBar.querySelector('.file-attachment-name').textContent = `Attached: ${this.attachedFile.filename}`;
+      this.fileAttachmentBar.style.display = 'flex';
+    }
+  }
+
+  hideFileAttachmentBar() {
+    this.fileAttachmentBar.style.display = 'none';
+  }
+
+  toggleMobileMenu() {
+    this.sidebar.classList.toggle('open');
+    this.overlay.classList.toggle('active');
+  }
+
+  closeMobileMenu() {
+    this.sidebar.classList.remove('open');
+    this.overlay.classList.remove('active');
+  }
+
+  setupTextareaAutoResize() {
+    // Auto-resize textarea functionality is handled in the input event listener
+    // This method exists to satisfy the constructor call
+  }
+}
+
+/* Init */
+document.addEventListener('DOMContentLoaded',()=>{
+  const bot=new ChatGPTBot();
+  window.chatBotInstance=bot;
+  window.addMessage=(role,content,stream=false)=>bot.addMessage(content,role,stream);
+  window.sendMessage=text=>{ if(text){ bot.messageInput.value=text; bot.sendMessage(); } };
+
+  // Auto-attach if ?cid present
+  const params=new URLSearchParams(window.location.search);
+  const cid=params.get('cid');
+  const filename=params.get('filename')||'PDF Document';
+  if(cid){
+    bot.addMessage(`Attaching PDF (${filename})...`,'ai',true);
+    fetch('/api/chat/attach_pdf',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({cid,filename,session_id:bot.sessionId})
+    }).then(r=>r.json()).then(d=>{
+      if(d.status==='success'){
+        bot.addMessage(d.content,'ai',true);
+        bot.attachedFile={cid,filename};
+        bot.showFileAttachmentBar();
+        bot.loadChatSessions();
+      } else bot.addMessage('Failed to attach PDF','ai',true);
+    }).catch(()=>bot.addMessage('Error attaching PDF.','ai',true));
+  }
+});
+
+// Temp PDF (non-IPFS)
+function uploadChatPDF(file){
+  const fd=new FormData(); fd.append('file',file);
+  window.chatBotInstance?.addMessage('Processing PDF locally...','ai',true);
+  fetch('/api/chat/upload_temp_pdf',{method:'POST',body:fd})
+  .then(r=>r.json()).then(d=>{
+    window.chatBotInstance?.addMessage(d.status==='success'?d.content:('PDF processing failed: '+(d.message||'Error')),'ai',true);
+  }).catch(()=>window.chatBotInstance?.addMessage('Upload failed.','ai',true));
+}
+function detachPDF(){ window.sendMessage && window.sendMessage('clear pdf'); }
+</script>
+{% endblock %}
