@@ -125,3 +125,7 @@ Thumbs.db
 
 # API Keys (keep this - don't commit real API keys)
 .env.local
+
+
+!data/processed_data.csv
+!data/embeddings/faiss_index.bin
