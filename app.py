@@ -40,6 +40,11 @@ DIAGNOSTIC_MODE = True
 def env(name, default=None):
     return os.environ.get(name, default)
 
+# Memory optimization environment variables
+LITE_MODE = env('LITE_MODE', 'false').lower() == 'true'
+DISABLE_RAG = env('DISABLE_RAG', 'false').lower() == 'true'
+USE_SIMPLE_CHAT = env('USE_SIMPLE_CHAT', 'false').lower() == 'true'
+
 # Load .env file if it exists (for local development only)
 try:
     from dotenv import load_dotenv
@@ -1338,11 +1343,6 @@ class SmartFallbackResponder:
         is_medicine_question = any(keyword in query_lower for keyword in medicine_keywords)
         
         if is_medicine_question:
-            # Try inference providers for medicine questions
-            try:
-                response, provider_used = call_with_fallback(query)
-                return response
-            except Exception as e:
                 logger.warning(f"All inference providers failed for medicine question: {e}")
                 # Provide helpful guidance for unknown medicines
                 return f"""I don't have specific information about the medication mentioned in your question: "{query}"
