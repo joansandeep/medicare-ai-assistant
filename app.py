@@ -1551,8 +1551,8 @@ def get_user_chat_sessions(user_id, limit=20):
 # ============================================================
 # CHATBOT API
 # ============================================================
-FAISS_PATH = "Website/data/embeddings/faiss_index.bin"
-DATA_PATH = "Website/data/processed_data.csv"
+FAISS_PATH = "data/embeddings/faiss_index.bin"
+DATA_PATH = "data/processed_data.csv"
 
 # Initialize RAG pipeline after environment is loaded
 rag_pipeline = None
