@@ -1,4 +1,6 @@
 # Ignore common data files and temporary artifacts
+*.csv
+*.bin
 *.tmp
 *.log
 *.sqlite3
